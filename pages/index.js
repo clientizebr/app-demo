@@ -166,18 +166,25 @@ export default function Home() {
     }
   }
 
+  // Usa o App Bridge SDK carregado via CDN (ver _document.js)
+  function getApp() {
+    return typeof window !== 'undefined' && window.Clientize
+      ? window.Clientize.createApp()
+      : null;
+  }
+
   function sendToast(message, type = 'success') {
-    window.parent.postMessage(
-      { type: 'clientize:toast', payload: { message, type } },
-      '*'
-    );
+    const app = getApp();
+    if (app) {
+      app.toast({ message, type });
+    }
   }
 
   function navigate(path) {
-    window.parent.postMessage(
-      { type: 'clientize:navigate', payload: { path } },
-      '*'
-    );
+    const app = getApp();
+    if (app) {
+      app.navigate(path);
+    }
   }
 
   return (
