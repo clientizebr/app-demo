@@ -1,38 +1,38 @@
 # Clientize Extension Demo
 
-App de exemplo que demonstra como construir uma extensao para a plataforma Clientize.
+App de exemplo que demonstra como construir uma extensão para a plataforma Clientize.
 
 <!-- ![Screenshot](screenshot.png) -->
 
 ## O que este app demonstra
 
-- **Verificacao de session token** -- valida o token JWT da sessao do iframe via API da Clientize
-- **Comunicacao via App Bridge** -- envia comandos `postMessage` para o host (toast, navigate)
-- **Callback de instalacao** -- recebe e verifica o webhook POST enviado quando o app e instalado
-- **Padrao de integracao com a API** -- proxy server-side para chamadas autenticadas a API da Clientize
+- **Verificação de session token** — valida o token JWT da sessão do iframe via API da Clientize
+- **Comunicação via App Bridge** — envia comandos `postMessage` para o host (toast, navigate)
+- **Callback de instalação** — recebe e verifica o webhook POST enviado quando o app é instalado
+- **Padrão de integração com a API** — proxy server-side para chamadas autenticadas à API da Clientize
 
-## Pre-requisitos
+## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) 18 ou superior
 - Uma conta de parceiro na Clientize com acesso ao portal de parceiros
 - Um workspace de teste para instalar o app
 
-## Configuracao
+## Configuração
 
-### 1. Clone o repositorio
+### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/clientize/clientize-extension-demo.git
-cd clientize-extension-demo
+git clone https://github.com/clientizebr/app-demo.git
+cd app-demo
 ```
 
-### 2. Instale as dependencias
+### 2. Instale as dependências
 
 ```bash
 npm install
 ```
 
-### 3. Configure as variaveis de ambiente
+### 3. Configure as variáveis de ambiente
 
 Copie o arquivo de exemplo e preencha com as credenciais do seu app:
 
@@ -71,25 +71,25 @@ Depois, instale o app em um workspace de teste.
 
 ```
 pages/
-  index.js              Pagina principal -- exibe o session token,
-                        botao de verificacao e controles do App Bridge
-  callback.js           Pagina que exibe os dados do ultimo callback
-                        de instalacao recebido
+  index.js              Página principal — exibe o session token,
+                        botão de verificação e controles do App Bridge
+  callback.js           Página que exibe os dados do último callback
+                        de instalação recebido
   api/
-    callback.js         Endpoint que recebe o webhook POST de instalacao
+    callback.js         Endpoint que recebe o webhook POST de instalação
                         e verifica a assinatura HMAC
     verify-session.js   Proxy server-side que valida o session token
                         chamando a API da Clientize
-.env.example            Modelo das variaveis de ambiente necessarias
-next.config.js          Configuracao do Next.js
-package.json            Dependencias e scripts
+.env.example            Modelo das variáveis de ambiente necessárias
+next.config.js          Configuração do Next.js
+package.json            Dependências e scripts
 ```
 
 ## Como funciona
 
-### Callback de instalacao
+### Callback de instalação
 
-Quando um usuario instala seu app, a Clientize envia um `POST` para a URL de callback configurada. O payload contem os dados da instalacao (workspace, usuario, escopos). O header `X-Clientize-Signature` permite verificar que a requisicao realmente veio da Clientize usando HMAC-SHA256 com o Signing Secret.
+Quando um usuário instala seu app, a Clientize envia um `POST` para a URL de callback configurada. O payload contém os dados da instalação (workspace, usuário, escopos). O header `X-Clientize-Signature` permite verificar que a requisição realmente veio da Clientize usando HMAC-SHA256 com o Signing Secret.
 
 ```
 Clientize --POST--> /api/callback --verifica HMAC--> armazena dados
@@ -97,7 +97,7 @@ Clientize --POST--> /api/callback --verifica HMAC--> armazena dados
 
 ### Session token (iframe)
 
-Quando o app e aberto dentro da Clientize, ele carrega em um iframe com o parametro `?session_token=...`. Esse token JWT identifica o workspace e o usuario. O app envia o token para seu proprio backend (`/api/verify-session`), que faz uma chamada server-side para a API da Clientize validar o token.
+Quando o app é aberto dentro da Clientize, ele carrega em um iframe com o parâmetro `?session_token=...`. Esse token JWT identifica o workspace e o usuário. O app envia o token para seu próprio backend (`/api/verify-session`), que faz uma chamada server-side para a API da Clientize validar o token.
 
 ```
 iframe (?session_token=xxx) --> /api/verify-session --> Clientize API /api/v1/session/verify
@@ -105,25 +105,25 @@ iframe (?session_token=xxx) --> /api/verify-session --> Clientize API /api/v1/se
 
 ### App Bridge (postMessage)
 
-O app pode se comunicar com o host Clientize enviando mensagens via `window.parent.postMessage`. Comandos disponiveis:
+O app pode se comunicar com o host Clientize enviando mensagens via `window.parent.postMessage`. Comandos disponíveis:
 
-| Tipo | Descricao |
+| Tipo | Descrição |
 |------|-----------|
-| `clientize:toast` | Exibe uma notificacao toast na interface do host |
+| `clientize:toast` | Exibe uma notificação toast na interface do host |
 | `clientize:navigate` | Navega para uma rota dentro da Clientize |
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
-| Variavel | Descricao |
+| Variável | Descrição |
 |----------|-----------|
 | `CLIENTIZE_URL` | URL base da Clientize (sem barra no final). Ex: `https://app.clientize.test` |
 | `CLIENTIZE_CLIENT_SECRET` | Client Secret do app, obtido no portal de parceiros |
 | `CLIENTIZE_SIGNING_SECRET` | Signing Secret usado para verificar assinaturas HMAC dos webhooks |
 
-## Licenca
+## Licença
 
 [MIT](LICENSE)
 
 ---
 
-Documentacao completa: [https://docs.clientize.com.br](https://docs.clientize.com.br)
+Documentação completa: [https://docs.clientize.com.br](https://docs.clientize.com.br)
