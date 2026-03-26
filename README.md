@@ -103,22 +103,37 @@ Quando o app é aberto dentro da Clientize, ele carrega em um iframe com o parâ
 iframe (?session_token=xxx) --> /api/verify-session --> Clientize API /api/v1/session/verify
 ```
 
-### App Bridge (postMessage)
+### App Bridge
 
-O app pode se comunicar com o host Clientize enviando mensagens via `window.parent.postMessage`. Comandos disponíveis:
+O app usa o SDK `Clientize.createApp()` (carregado via CDN) para se comunicar com o host. Comandos disponíveis:
 
-| Tipo | Descrição |
-|------|-----------|
-| `clientize:toast` | Exibe uma notificação toast na interface do host |
-| `clientize:navigate` | Navega para uma rota dentro da Clientize |
+| Método | Descrição |
+|--------|-----------|
+| `app.toast({ message, type })` | Exibe uma notificação toast na interface do host |
+| `app.navigate(path)` | Navega para uma rota dentro da Clientize |
+| `app.getContext()` | Retorna workspace, usuário e session token |
+| `app.getSessionToken()` | Retorna o session token JWT |
+
+### Integração com a API
+
+O botão "Carregar Catálogo" demonstra o fluxo completo de acesso à API:
+
+```
+1. Frontend envia session_token para /api/catalog (backend do app)
+2. Backend verifica o token com a Clientize (POST /api/v1/session/verify)
+3. Backend obtém access_token via client_credentials grant (POST /oauth/token)
+4. Backend chama a API (GET /api/v1/catalog-items) com o token e X-Clientize-Workspace-Id
+5. Resultados são renderizados na tabela
+```
 
 ## Variáveis de ambiente
 
 | Variável | Descrição |
 |----------|-----------|
 | `CLIENTIZE_URL` | URL base da Clientize (sem barra no final). Ex: `https://app.clientize.test` |
-| `CLIENTIZE_CLIENT_SECRET` | Client Secret do app, obtido no portal de parceiros |
-| `CLIENTIZE_SIGNING_SECRET` | Signing Secret usado para verificar assinaturas HMAC dos webhooks |
+| `CLIENTIZE_CLIENT_ID` | Client ID do app, visível na página do app no portal de parceiros |
+| `CLIENTIZE_CLIENT_SECRET` | Client Secret do app, exibido apenas na criação |
+| `CLIENTIZE_SIGNING_SECRET` | Signing Secret usado para verificar assinaturas HMAC dos callbacks |
 
 ## Licença
 
