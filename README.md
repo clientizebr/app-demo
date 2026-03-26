@@ -126,4 +126,4 @@ O app pode se comunicar com o host Clientize enviando mensagens via `window.pare
 
 ---
 
-Documentação completa: [https://docs.clientize.com.br](https://docs.clientize.com.br)
+Documentação completa: [https://app.clientize.com.br/partners/docs](https://app.clientize.com.br/partners/docs)
