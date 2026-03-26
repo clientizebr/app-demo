@@ -142,6 +142,9 @@ export default function Home() {
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
+  const [catalog, setCatalog] = useState(null);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
+  const [catalogError, setCatalogError] = useState(null);
 
   async function verifyToken() {
     if (!session_token) return;
@@ -184,6 +187,30 @@ export default function Home() {
     const app = getApp();
     if (app) {
       app.navigate(path);
+    }
+  }
+
+  async function loadCatalog() {
+    if (!session_token) return;
+    setLoadingCatalog(true);
+    setCatalogError(null);
+    try {
+      const res = await fetch('/api/catalog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCatalogError(data.error + (data.hint ? ` — ${data.hint}` : ''));
+      } else {
+        setCatalog(data);
+        sendToast(`${data.items.length} itens carregados do catálogo!`);
+      }
+    } catch (err) {
+      setCatalogError(err.message);
+    } finally {
+      setLoadingCatalog(false);
     }
   }
 
@@ -332,6 +359,89 @@ export default function Home() {
           </div>
         </div>
 
+        {/* API Integration */}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Integração com a API</h2>
+          <p style={styles.cardDesc}>
+            Carregue dados do workspace usando a API da Clientize com autenticação <code>client_credentials</code>.
+          </p>
+
+          <div style={{ marginTop: 12 }}>
+            {session_token && !loadingCatalog ? (
+              <button onClick={loadCatalog} style={styles.btn(colors.primary)}>
+                Carregar Catálogo
+              </button>
+            ) : (
+              <button disabled style={styles.btnDisabled}>
+                {loadingCatalog ? 'Carregando...' : 'Carregar Catálogo'}
+              </button>
+            )}
+          </div>
+
+          {catalogError && (
+            <div style={{
+              marginTop: 12,
+              padding: 12,
+              background: colors.errorBg,
+              border: `1px solid ${colors.errorBorder}`,
+              borderRadius: 6,
+              color: colors.error,
+              fontSize: 14,
+            }}>
+              {catalogError}
+            </div>
+          )}
+
+          {catalog && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>
+                  Catálogo de {catalog.workspace?.name}
+                </h3>
+                <span style={styles.badge(colors.successBg, colors.success)}>
+                  {catalog.total} {catalog.total === 1 ? 'item' : 'itens'}
+                </span>
+              </div>
+
+              {catalog.items.length > 0 ? (
+                <div style={{ borderRadius: 6, border: `1px solid ${colors.border}`, overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                    <thead>
+                      <tr style={{ background: colors.codeBg }}>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: colors.muted, fontSize: 12 }}>Nome</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: colors.muted, fontSize: 12 }}>Tipo</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 600, color: colors.muted, fontSize: 12 }}>Preço</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: 600, color: colors.muted, fontSize: 12 }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {catalog.items.map((item, i) => (
+                        <tr key={item.id} style={{ borderTop: `1px solid ${colors.border}`, background: i % 2 === 0 ? 'white' : colors.bg }}>
+                          <td style={{ padding: '10px 12px', fontWeight: 500 }}>{item.name}</td>
+                          <td style={{ padding: '10px 12px', color: colors.muted }}>{item.type || '—'}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', fontFamily: 'monospace' }}>
+                            {item.price_cents != null ? `R$ ${(item.price_cents / 100).toFixed(2)}` : '—'}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <span style={styles.badge(
+                              item.active ? colors.successBg : colors.errorBg,
+                              item.active ? colors.success : colors.error
+                            )}>
+                              {item.active ? 'Ativo' : 'Inativo'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{ fontSize: 14, color: colors.muted }}>Nenhum item no catálogo deste workspace.</p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Installation Callback */}
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Callback de Instalacao</h2>
@@ -367,8 +477,12 @@ export default function Home() {
               query string. Esse token e validado server-side via <code>/api/verify-session</code>.
             </p>
             <p style={{ margin: 0 }}>
-              <strong>3. App Bridge:</strong> O app usa <code>postMessage</code> para enviar comandos ao host
-              (toasts, navegacao).
+              <strong>3. App Bridge:</strong> O app usa o SDK <code>Clientize.createApp()</code> para enviar comandos ao host
+              (toasts, navegação).
+            </p>
+            <p style={{ margin: 0 }}>
+              <strong>4. API:</strong> O app usa <code>client_credentials</code> para obter um access token e consultar
+              a API da Clientize (ex: carregar itens do catálogo).
             </p>
           </div>
         </div>
